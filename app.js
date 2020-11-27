@@ -2,6 +2,8 @@
 const express = require('express');
 const app = express();
 
+const _ = require('lodash');
+
 const bodyParser = require('body-parser');
 const today = require(__dirname + '/currentDate/generateDate.js');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -12,7 +14,7 @@ const { json } = require('body-parser');
 app.use(express.static("public"));
 
 app.set('view engine', 'ejs');
-mongoose.connect('mongodb://localhost:27017/todolistDB', {
+mongoose.connect('mongodb+srv://codesign:test_123@cluster0.oupuj.mongodb.net/todolistDB?retryWrites=true&w=majority', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false
@@ -103,21 +105,23 @@ app.post('/delete', (req, res) => {
   } else {
     List.findOneAndUpdate(
       {
-        'name': req.body.pageName
+        name: req.body.pageName
       },
       {
         $pull: { list: { _id: req.body.checkbox} }
       },
       (err) => {
-        if(err){ console.log(err);}
+        if(err){ 
+          console.log(err);
+        } else {
+          res.redirect('/' + req.body.pageName);
+        }
     });
-    res.redirect('/' + req.body.pageName);
   }
-
 });
 
 app.get('/:newRoute', (req,res) => {
-  const routeName = req.params.newRoute;
+  const routeName = _.capitalize(req.params.newRoute);
 
   List.find({name: routeName}, (err, items) => {
     if(!err){
